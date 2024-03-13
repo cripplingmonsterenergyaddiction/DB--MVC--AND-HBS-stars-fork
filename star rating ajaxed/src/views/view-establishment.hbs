@@ -1,0 +1,82 @@
+{{> header}}
+
+<div class="whole">
+  {{> checkmark}}
+  <div class="main-list">
+    <div class="establishments-container">
+      {{#each establishments}}
+      <div class="restos">
+        <a href="/resto_review/estb-review.html">
+          <img src="{{restoPic}}" alt="{{restoName}}" class="resto-pic" />
+          <section class="title-bar-box">
+            <h2 class="resto-name">{{restoName}}</h2>
+            <section class="ratings">
+              <h4 class="main-rating">{{main_rating}}</h4>
+              <h5 class="out-of">{{outOF}}</h5>
+              <h4 class="overall-rating">{{overall}}</h4>
+              <img src="{{star_img}}" alt="star" class="rate" />
+            </section>
+          </section>
+          <p class="description">{{description}}</p>
+        </a>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</div>
+
+{{> footer}}
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Function to fetch and render establishments
+    function fetchAndRenderEstablishments(queryString = "") {
+      fetch(`/api/restaurants?${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+          const { restaurants } = data;
+          const establishmentsContainer = document.querySelector(".main-list");
+
+          // Generate HTML for filtered establishments
+          const html = restaurants.map(restaurant => `
+            <div class="restos">
+              <img src="${restaurant.restoPic}" alt="${restaurant.restoName}" class="resto-pic">
+              <h2 class="resto-name">${restaurant.restoName}</h2>
+              <div class="ratings">
+                <img src="${restaurant.star_img}" alt="Star" class="star-img">
+                <span id="main-rating">${restaurant.main_rating}</span>
+                <span id="out-of">${restaurant.outOF}</span>
+                <span id="overall-rating">${restaurant.overall}</span>
+              </div>
+              <p class="description">${restaurant.description}</p>
+            </div>
+          `).join("");
+
+          // Update the content of the main-list container with the filtered establishments HTML
+          establishmentsContainer.innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    }
+
+    // Fetch and render establishments on initial page load
+    fetchAndRenderEstablishments();
+
+    const applyButton = document.getElementById("apply-button");
+    applyButton.addEventListener("click", function (event) {
+      event.preventDefault();
+
+      const selectedRatings = Array.from(document.querySelectorAll('input[name="stars"]:checked'))
+                                  .map(checkbox => parseInt(checkbox.value, 10));
+
+      const queryString = selectedRatings.map(rating => `stars=${rating}`).join("&");
+
+      // Fetch and render establishments based on selected filters
+      fetchAndRenderEstablishments(queryString);
+    });
+  });
+</script>
+
